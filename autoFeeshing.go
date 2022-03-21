@@ -13,7 +13,6 @@ var isFeeshing bool = false
 var isBaiting bool = false
 
 func main() {
-	go printMousePos()
 	go throwBait()
 	go goFeesh()
 	fmt.Scanln()
@@ -35,16 +34,16 @@ func goFeesh() {
 	for {
 		if !isBaiting {
 
-			// if fishing, real in fish. if not fishing, cast line
+			// if fishing, reel in fish. if not fishing, cast line
 			if isFeeshing {
 				// check for "!"
 				exPixelCount := 0
-				var pixelColors [9]string
+				var pixelColors []string
 
 				// grabs pixel colors in a 3x3 pixel area
-				for i := 0; i <= 3; i++ {
-					for j := 0; j <= 3; j++ {
-						pixelColors[i] = robotgo.GetPixelColor(959+i, 499+j)
+				for i := 0; i < 3; i++ {
+					for j := 0; j < 3; j++ {
+						pixelColors = append(pixelColors, robotgo.GetPixelColor(959+i, 499+j))
 					}
 				}
 				// count pixels that are "yellow"
@@ -55,9 +54,10 @@ func goFeesh() {
 					}
 				}
 
-				isEx := exPixelCount >= 4
+				isEx := exPixelCount >= 5
 				// reel in feesh
 				if isEx {
+					fmt.Println(pixelColors)
 					rand.Seed(time.Now().UnixNano())
 					randomReactionTime := time.Duration(rand.Intn(240-180+1) + 180)
 					time.Sleep(randomReactionTime * time.Millisecond) // random "human" reaction time
@@ -83,29 +83,10 @@ func throwBait() {
 			time.Sleep(time.Second * 10)
 		} else {
 			isBaiting = true
-			// mouseX, mouseY := robotgo.GetMousePos();
 			robotgo.KeyPress("d")
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 1)
 			isBaiting = false
 			time.Sleep(time.Second * 901)
 		}
 	}
-}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func printMousePos() {
-	for {
-		time.Sleep(time.Millisecond * 500)
-		mouseX, mouseY := robotgo.GetMousePos()
-		fmt.Println(mouseX, mouseY)
-	}
-
 }
