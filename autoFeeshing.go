@@ -10,7 +10,6 @@ import (
 )
 
 var isFeeshing bool = false
-var isBaiting bool = false
 
 func main() {
 	go throwBait()
@@ -32,61 +31,55 @@ func goFeesh() {
 	// Press "e"
 
 	for {
-		if !isBaiting {
+		// if fishing, reel in fish. if not fishing, cast line
+		if isFeeshing {
+			// check for "!"
+			exPixelCount := 0
+			var pixelColors []string
 
-			// if fishing, reel in fish. if not fishing, cast line
-			if isFeeshing {
-				// check for "!"
-				exPixelCount := 0
-				var pixelColors []string
-
-				// grabs pixel colors in a 3x3 pixel area
-				for i := 0; i < 3; i++ {
-					for j := 0; j < 3; j++ {
-						pixelColors = append(pixelColors, robotgo.GetPixelColor(959+i, 499+j))
-					}
+			// grabs pixel colors in a 3x3 pixel area
+			for i := 0; i < 3; i++ {
+				for j := 0; j < 3; j++ {
+					pixelColors = append(pixelColors, robotgo.GetPixelColor(959+i, 499+j))
 				}
-				// count pixels that are "yellow"
-				for _, pixelColor := range pixelColors {
-					totalFs := strings.Count(pixelColor, "f")
-					if string(pixelColor[0]) == "f" && totalFs <= 4 {
-						exPixelCount++
-					}
+			}
+			// count pixels that are "yellow"
+			for _, pixelColor := range pixelColors {
+				totalFs := strings.Count(pixelColor, "f")
+				if string(pixelColor[0]) == "f" && totalFs <= 4 {
+					exPixelCount++
 				}
-
-				isEx := exPixelCount >= 5
-				// reel in feesh
-				if isEx {
-					fmt.Println(pixelColors)
-					rand.Seed(time.Now().UnixNano())
-					randomReactionTime := time.Duration(rand.Intn(240-180+1) + 180)
-					time.Sleep(randomReactionTime * time.Millisecond) // random "human" reaction time
-					robotgo.KeyPress("e")                             // reel in fish
-					time.Sleep(5 * time.Second)                       // wait for fish to enter inventory and give throwBait a chance to run
-					isFeeshing = false
-				}
-			} else {
-				// move mouse to ocean
-				robotgo.KeyPress("e")       // cast fish line
-				time.Sleep(2 * time.Second) // wait for screen to center on bobber
-				isFeeshing = true
 			}
 
+			isEx := exPixelCount >= 5
+			// reel in feesh
+			if isEx {
+				fmt.Println(pixelColors)
+				rand.Seed(time.Now().UnixNano())
+				randomReactionTime := time.Duration(rand.Intn(240-180+1) + 180)
+				time.Sleep(randomReactionTime * time.Millisecond) // random "human" reaction time
+				fmt.Println("reeling")
+				robotgo.KeyPress("e") // reel in fish
+				isFeeshing = false
+			}
+		} else {
+			time.Sleep(5 * time.Second) // wait for fish to enter inventory and give throwBait a chance to run
+			fmt.Println("casting")
+			robotgo.KeyPress("e") // cast fish line
+			isFeeshing = true
+			time.Sleep(2 * time.Second) // wait for screen to center on bobber
 		}
 
 	}
+
 }
 
 func throwBait() {
 	for {
-		if isFeeshing {
-			time.Sleep(time.Second * 10)
-		} else {
-			isBaiting = true
+		if !isFeeshing {
+			fmt.Println("baiting")
 			robotgo.KeyPress("d")
-			time.Sleep(time.Second * 1)
-			isBaiting = false
-			time.Sleep(time.Second * 901)
+			isFeeshing = true
 		}
 	}
 }
